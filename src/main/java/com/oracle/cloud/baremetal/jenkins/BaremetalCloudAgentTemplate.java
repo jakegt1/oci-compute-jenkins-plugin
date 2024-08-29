@@ -687,7 +687,7 @@ public class BaremetalCloudAgentTemplate implements Describable<BaremetalCloudAg
                 @QueryParameter String imageId)
                 throws IOException, ServletException {
             ListBoxModel model = new ListBoxModel();
-            model.add("<First select 'Availablity Domain' and 'Image' above>", "");
+            model.add("<First select 'Availability Domain' and 'Image' above>", "");
 
             if (anyRequiredFieldEmpty(credentialsId, compartmentId, imageId)) {
                 return model;
@@ -722,13 +722,13 @@ public class BaremetalCloudAgentTemplate implements Describable<BaremetalCloudAg
 
             if (anyRequiredFieldEmpty(credentialsId, compartmentId, availableDomain, imageId, shape)) {
                 model.clear();
-                model.add("<First select 'Availablity Domain' and 'Image' and 'Shape' above>","");
+                model.add("<First select 'Availability Domain' and 'Image' and 'Shape' above>","");
                 return model;
             }
 
-            if (!shape.contains("Flex")) {
+            if (!shape.contains("Flex") && !shape.contains("Generic")) {
                 model.clear();
-                model.add("<This field only takes effect for flexible shape if selected>","");
+                model.add("<This field only takes effect for flexible and generic shapes if selected>","");
                 return model;
             }
 
@@ -755,13 +755,13 @@ public class BaremetalCloudAgentTemplate implements Describable<BaremetalCloudAg
 
             if (anyRequiredFieldEmpty(credentialsId, compartmentId, availableDomain, imageId, shape)) {
                 model.clear();
-                model.add("<First select 'Availablity Domain' and 'Image' and 'Shape' above>","");
+                model.add("<First select 'Availability Domain' and 'Image' and 'Shape' above>","");
                 return model;
             }
 
-            if (!shape.contains("Flex")) {
+            if (!shape.contains("Flex") && !shape.contains("Generic")) {
                 model.clear();
-                model.add("<This field only takes effect for flexible shape if selected>","");
+                model.add("<This field only takes effect for flexible and generic shapes if selected>","");
                 return model;
             }
 
@@ -862,7 +862,7 @@ public class BaremetalCloudAgentTemplate implements Describable<BaremetalCloudAg
                 @QueryParameter String vcnCompartmentId,
                 @QueryParameter String subnetCompartmentId) throws IOException, ServletException {
             ListBoxModel model = new ListBoxModel();
-            model.add("<First select 'Availablity Domain' and 'Virtual Cloud Network' above>", "");
+            model.add("<First select 'Availability Domain' and 'Virtual Cloud Network' above>", "");
 
             if (anyRequiredFieldEmpty(credentialsId, availableDomain, vcnId, compartmentId)) {
                 return model;
