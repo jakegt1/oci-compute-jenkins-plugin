@@ -50,6 +50,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 
 public class BaremetalCloudAgentTemplate implements Describable<BaremetalCloudAgentTemplate>{
     private static final Logger LOGGER = Logger.getLogger(BaremetalCloud.class.getName());
+    static final int DEFAULT_VPUS = 10;
     static final int FAILURE_COUNT_LIMIT = 3;
     static final int DISABLE_FAILURE_COUNT_LIMIT = 20;
     private transient boolean templateSleep = false;
@@ -93,6 +94,7 @@ public class BaremetalCloudAgentTemplate implements Describable<BaremetalCloudAg
     public final String memoryInGBs;
     public final Boolean doNotDisable;
     public final String retryTimeoutMins;
+    private long bootVolumeVPUs;
 
     private transient int failureCount=0;
     private transient String disableCause;
@@ -370,6 +372,17 @@ public class BaremetalCloudAgentTemplate implements Describable<BaremetalCloudAg
         return (memoryInGBs == null  && !numberOfOcpus.isEmpty()) ? Integer.toString(Integer.parseInt(numberOfOcpus)*16) : memoryInGBs;
     }
 
+    public long getBootVolumeVPUs() {
+        // backwards compat - templates created before the addition of this field will be set to 0.
+        // 0 is not an acceptable option for VPUs, so just return the default - 10 (balanced).
+        return bootVolumeVPUs == 0 ? DEFAULT_VPUS : bootVolumeVPUs;
+    }
+
+    @DataBoundSetter
+    public void setBootVolumeVPUs(final long bootVolumeVPUs) {
+        this.bootVolumeVPUs = bootVolumeVPUs;
+    }
+
     public String getPublicKey() throws IOException {
         SSHUserPrivateKey sshCredentials = (SSHUserPrivateKey) BaremetalCloud.matchCredentials(SSHUserPrivateKey.class, this.sshCredentialsId);
         if (sshCredentials != null) {
@@ -571,6 +584,19 @@ public class BaremetalCloudAgentTemplate implements Describable<BaremetalCloudAg
         private static BaremetalCloudClient getClient(String credentialsId, String maxAsyncThreads){
             BaremetalCloudClientFactory factory = SDKBaremetalCloudClientFactory.INSTANCE;
             return factory.createClient(credentialsId, Integer.parseInt(maxAsyncThreads));
+        }
+
+        public ListBoxModel doFillBootVolumeVPUsItems() throws IOException, ServletException {
+            ListBoxModel model = new ListBoxModel();
+
+            model.add("10 (Balanced)", "10");
+            model.add("20 (Higher Performance)", "20");
+            model.add("30 (Ultra High Performance)", "30");
+            for(int i = 40; i <= 120; i+=10) {
+                model.add(Integer.toString(i), Integer.toString(i));
+            }
+
+            return model;
         }
 
         public ListBoxModel doFillCompartmentIdItems(

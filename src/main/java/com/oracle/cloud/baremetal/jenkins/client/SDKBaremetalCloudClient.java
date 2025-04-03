@@ -1,13 +1,15 @@
 package com.oracle.cloud.baremetal.jenkins.client;
 
-import com.oracle.bmc.ClientConfiguration;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import com.oracle.bmc.ClientConfiguration;
 import com.oracle.bmc.ClientRuntime;
 import com.oracle.bmc.auth.InstancePrincipalsAuthenticationDetailsProvider;
 import com.oracle.bmc.auth.SimpleAuthenticationDetailsProvider;
@@ -16,9 +18,42 @@ import com.oracle.bmc.core.ComputeClient;
 import com.oracle.bmc.core.ComputeWaiters;
 import com.oracle.bmc.core.VirtualNetworkAsyncClient;
 import com.oracle.bmc.core.VirtualNetworkClient;
-import com.oracle.bmc.core.model.*;
-import com.oracle.bmc.core.requests.*;
-import com.oracle.bmc.core.responses.*;
+import com.oracle.bmc.core.model.CreateVnicDetails;
+import com.oracle.bmc.core.model.Image;
+import com.oracle.bmc.core.model.Instance;
+import com.oracle.bmc.core.model.InstanceSourceViaImageDetails;
+import com.oracle.bmc.core.model.LaunchInstanceDetails;
+import com.oracle.bmc.core.model.LaunchInstanceShapeConfigDetails;
+import com.oracle.bmc.core.model.NetworkSecurityGroup;
+import com.oracle.bmc.core.model.Shape;
+import com.oracle.bmc.core.model.Subnet;
+import com.oracle.bmc.core.model.Vcn;
+import com.oracle.bmc.core.model.VnicAttachment;
+import com.oracle.bmc.core.requests.GetInstanceRequest;
+import com.oracle.bmc.core.requests.GetSubnetRequest;
+import com.oracle.bmc.core.requests.GetVnicRequest;
+import com.oracle.bmc.core.requests.InstanceActionRequest;
+import com.oracle.bmc.core.requests.LaunchInstanceRequest;
+import com.oracle.bmc.core.requests.ListImagesRequest;
+import com.oracle.bmc.core.requests.ListInstancesRequest;
+import com.oracle.bmc.core.requests.ListNetworkSecurityGroupsRequest;
+import com.oracle.bmc.core.requests.ListShapesRequest;
+import com.oracle.bmc.core.requests.ListSubnetsRequest;
+import com.oracle.bmc.core.requests.ListVcnsRequest;
+import com.oracle.bmc.core.requests.ListVnicAttachmentsRequest;
+import com.oracle.bmc.core.requests.TerminateInstanceRequest;
+import com.oracle.bmc.core.responses.GetInstanceResponse;
+import com.oracle.bmc.core.responses.GetSubnetResponse;
+import com.oracle.bmc.core.responses.GetVnicResponse;
+import com.oracle.bmc.core.responses.InstanceActionResponse;
+import com.oracle.bmc.core.responses.LaunchInstanceResponse;
+import com.oracle.bmc.core.responses.ListImagesResponse;
+import com.oracle.bmc.core.responses.ListInstancesResponse;
+import com.oracle.bmc.core.responses.ListShapesResponse;
+import com.oracle.bmc.core.responses.ListSubnetsResponse;
+import com.oracle.bmc.core.responses.ListVcnsResponse;
+import com.oracle.bmc.core.responses.ListVnicAttachmentsResponse;
+import com.oracle.bmc.core.responses.TerminateInstanceResponse;
 import com.oracle.bmc.identity.Identity;
 import com.oracle.bmc.identity.IdentityAsyncClient;
 import com.oracle.bmc.identity.IdentityClient;
@@ -26,15 +61,19 @@ import com.oracle.bmc.identity.model.AvailabilityDomain;
 import com.oracle.bmc.identity.model.Compartment;
 import com.oracle.bmc.identity.model.TagNamespaceSummary;
 import com.oracle.bmc.identity.model.Tenancy;
-import com.oracle.bmc.identity.requests.*;
+import com.oracle.bmc.identity.requests.GetTenancyRequest;
+import com.oracle.bmc.identity.requests.GetUserRequest;
+import com.oracle.bmc.identity.requests.ListAvailabilityDomainsRequest;
+import com.oracle.bmc.identity.requests.ListCompartmentsRequest;
+import com.oracle.bmc.identity.requests.ListTagNamespacesRequest;
 import com.oracle.bmc.identity.responses.GetTenancyResponse;
 import com.oracle.bmc.identity.responses.ListCompartmentsResponse;
 import com.oracle.bmc.identity.responses.ListTagNamespacesResponse;
 import com.oracle.bmc.model.BmcException;
 import com.oracle.cloud.baremetal.jenkins.BaremetalCloudAgentTemplate;
-import com.oracle.bmc.core.model.NetworkSecurityGroup;
 import com.oracle.cloud.baremetal.jenkins.BaremetalCloudNsgTemplate;
 import com.oracle.cloud.baremetal.jenkins.BaremetalCloudTagsTemplate;
+
 import jenkins.model.Jenkins;
 
 /**
@@ -208,7 +247,11 @@ public class SDKBaremetalCloudClient implements BaremetalCloudClient {
                                     .nsgIds(nsgIds)
                                     .build())
                     .displayName(name)
-                    .imageId(imageIdStr)
+                    .sourceDetails(
+                            InstanceSourceViaImageDetails.builder()
+                                    .bootVolumeVpusPerGB(template.getBootVolumeVPUs())
+                                    .imageId(imageIdStr)
+                                    .build())
                     .metadata(metadata)
                     .shape(shape)
                     .shapeConfig(shapeConfig)
