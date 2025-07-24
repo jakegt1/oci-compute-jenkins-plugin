@@ -48,6 +48,7 @@ public class TestBaremetalCloudAgentTemplate extends BaremetalCloudAgentTemplate
         String memoryInGBs;
         Boolean doNotDisable;
         String retryTimeoutMins;
+        Boolean disaleLegacyImdsEndpoint;
 
         public Builder description(String description) {
             this.description = description;
@@ -237,6 +238,11 @@ public class TestBaremetalCloudAgentTemplate extends BaremetalCloudAgentTemplate
             return this;
         }
 
+        public Builder disableLegacyImdsEndpoint(Boolean disableLegacyImdsEndpoint) {
+            this.disaleLegacyImdsEndpoint = disableLegacyImdsEndpoint;
+            return this;
+        }
+
         public TestBaremetalCloudAgentTemplate build() {
             return new TestBaremetalCloudAgentTemplate(this);
         }
@@ -285,7 +291,8 @@ public class TestBaremetalCloudAgentTemplate extends BaremetalCloudAgentTemplate
                 builder.instanceNamePrefix,
                 builder.memoryInGBs,
                 builder.doNotDisable,
-                builder.retryTimeoutMins);
+                builder.retryTimeoutMins,
+                builder.disaleLegacyImdsEndpoint);
 
     }
 

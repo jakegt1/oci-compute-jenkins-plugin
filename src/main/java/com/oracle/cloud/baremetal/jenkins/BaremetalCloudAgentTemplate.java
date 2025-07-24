@@ -95,6 +95,7 @@ public class BaremetalCloudAgentTemplate implements Describable<BaremetalCloudAg
     public final Boolean doNotDisable;
     public final String retryTimeoutMins;
     private long bootVolumeVPUs;
+    public final Boolean disableLegacyImdsEndpoint;
 
     private transient int failureCount=0;
     private transient String disableCause;
@@ -139,8 +140,9 @@ public class BaremetalCloudAgentTemplate implements Describable<BaremetalCloudAg
             final String instanceNamePrefix,
             final String memoryInGBs,
             final Boolean doNotDisable,
-            final String retryTimeoutMins){
-        this.compartmentId = compartmentId;
+            final String retryTimeoutMins,
+            final Boolean disableLegacyImdsEndpoint){
+    	this.compartmentId = compartmentId;
         this.availableDomain = availableDomain;
         this.vcnCompartmentId = vcnCompartmentId;
         this.vcnId = vcnId;
@@ -178,6 +180,7 @@ public class BaremetalCloudAgentTemplate implements Describable<BaremetalCloudAg
         this.doNotDisable = doNotDisable;
         this.retryTimeoutMins = retryTimeoutMins;
         this.verificationStrategy = verificationStrategy;
+        this.disableLegacyImdsEndpoint = disableLegacyImdsEndpoint;
     }
 
     public String getCompartmentId() {
@@ -406,6 +409,10 @@ public class BaremetalCloudAgentTemplate implements Describable<BaremetalCloudAg
 
     private static FormValidationValue<Integer> checkInitScriptTimeoutSeconds(String value){
         return FormValidationValue.validateNonNegativeInteger(value, 120);
+    }
+
+    public Boolean getDisableLegacyImdsEndpoint() {
+        return disableLegacyImdsEndpoint;
     }
 
     @Override

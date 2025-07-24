@@ -18,17 +18,7 @@ import com.oracle.bmc.core.ComputeClient;
 import com.oracle.bmc.core.ComputeWaiters;
 import com.oracle.bmc.core.VirtualNetworkAsyncClient;
 import com.oracle.bmc.core.VirtualNetworkClient;
-import com.oracle.bmc.core.model.CreateVnicDetails;
-import com.oracle.bmc.core.model.Image;
-import com.oracle.bmc.core.model.Instance;
-import com.oracle.bmc.core.model.InstanceSourceViaImageDetails;
-import com.oracle.bmc.core.model.LaunchInstanceDetails;
-import com.oracle.bmc.core.model.LaunchInstanceShapeConfigDetails;
-import com.oracle.bmc.core.model.NetworkSecurityGroup;
-import com.oracle.bmc.core.model.Shape;
-import com.oracle.bmc.core.model.Subnet;
-import com.oracle.bmc.core.model.Vcn;
-import com.oracle.bmc.core.model.VnicAttachment;
+import com.oracle.bmc.core.model.*;
 import com.oracle.bmc.core.requests.GetInstanceRequest;
 import com.oracle.bmc.core.requests.GetSubnetRequest;
 import com.oracle.bmc.core.requests.GetVnicRequest;
@@ -236,6 +226,11 @@ public class SDKBaremetalCloudClient implements BaremetalCloudClient {
                         .collect(Collectors.toList());
             }
 
+            InstanceOptions launchoptions = InstanceOptions
+                    .builder()
+                    .areLegacyImdsEndpointsDisabled(template.getDisableLegacyImdsEndpoint())
+                    .build();
+
             LaunchInstanceDetails.Builder instanceDetailsBuilder = LaunchInstanceDetails
                     .builder()
                     .availabilityDomain(ad)
@@ -255,7 +250,8 @@ public class SDKBaremetalCloudClient implements BaremetalCloudClient {
                     .metadata(metadata)
                     .shape(shape)
                     .shapeConfig(shapeConfig)
-                    .subnetId(subnetIdStr);
+                    .subnetId(subnetIdStr)
+                    .instanceOptions(launchoptions);
 
             if(template.getTags() != null) {
                 Map<String,String> freeFormTags = new HashMap<>();
